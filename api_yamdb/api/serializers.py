@@ -2,15 +2,18 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
+
 User = get_user_model()
 
 
 class UserCreationSerializer(serializers.Serializer):
     email = serializers.EmailField(
+        max_length=254,
         required=True,
         validators=[UniqueValidator(queryset=User.objects.all())]
     )
     username = serializers.CharField(
+        max_length=150,
         required=True,
         validators=[UniqueValidator(queryset=User.objects.all())]
     )
@@ -19,6 +22,10 @@ class UserCreationSerializer(serializers.Serializer):
         if value.lower() == 'me':
             raise serializers.ValidationError(
                 'Нельзя использовать me в качестве username')
+        if not all(c.isalnum() or c in '@.+-_' for c in value):
+            raise serializers.ValidationError(
+                'Username может содержать только буквы, цифры и @/./+/-/_'
+            )
         return value
 
 
