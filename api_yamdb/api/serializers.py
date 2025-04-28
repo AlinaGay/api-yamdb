@@ -10,12 +10,10 @@ class UserCreationSerializer(serializers.Serializer):
     email = serializers.EmailField(
         max_length=254,
         required=True
-        # validators=[UniqueValidator(queryset=User.objects.all())]
     )
     username = serializers.CharField(
         max_length=150,
         required=True
-        # validators=[UniqueValidator(queryset=User.objects.all())]
     )
 
     def validate_username(self, value):

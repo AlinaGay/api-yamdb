@@ -2,6 +2,8 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django.db import IntegrityError
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status
@@ -27,10 +29,40 @@ def send_confirmation_code(request):
     serializer = UserCreationSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
 
-    email = serializer.data['email']
-    username = serializer.data['username']
+    email = serializer.validated_data['email']
+    username = serializer.validated_data['username']
 
-    user, created = User.objects.get_or_create(email=email, username=username)
+    try:
+        existing_user = User.objects.filter(Q(email=email)
+                                            | Q(username=username)).first()
+
+        if existing_user:
+            if (
+                existing_user.email == email
+                and existing_user.username != username
+            ):
+                return Response(
+                    {"error": "Пользователь с таким email уже существует"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            elif (
+                existing_user.username == username
+                and existing_user.email != email
+            ):
+                return Response(
+                    {"error": "Пользователь с таким username уже существует"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            user = existing_user
+        else:
+            user = User.objects.create_user(email=email, username=username)
+
+    except IntegrityError:
+        return Response(
+            {"error": "Конфликт данных при создании пользователя"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
     confirmation_code = default_token_generator.make_token(user)
 
     send_mail(
