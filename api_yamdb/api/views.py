@@ -3,24 +3,63 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db import IntegrityError
-from django.db.models import Q
+from django.db.models import Avg, Q
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, status
+from rest_framework import filters, mixins, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
 
+from reviews.models import Category, Genre, Title
+from .filters import TitleFilter
 from .permissions import (IsAdmin, IsAdminOrReadOnly,
                           IsAuthorAdminModeratorOrReadOnly)
 from .serializers import (ConfirmationCodeSerializer, UserCreationSerializer,
                           UserSerializer, ConfirmationCodeSerializer,
-                          MeSerializer)
+                          MeSerializer, CategorySerializer, GenreSerializer,
+                          TitleReadSerializer, TitleWriteSerializer)
 
 User = get_user_model()
+
+
+class CDLViewSet(mixins.CreateModelMixin, mixins.DestroyModelMixin,
+                 mixins.ListModelMixin, GenericViewSet):
+    pass
+
+
+class CategoryViewSet(CDLViewSet):
+    permission_classes = (IsAdminOrReadOnly,)
+    lookup_field = 'slug'
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    filter_backends = (filters.SearchFilter,)
+    search_field = ('=name',)
+
+
+class TitleViewSet(ModelViewSet):
+    permission_classes = (IsAdminOrReadOnly,)
+    queryset = Title.objects.all().annotate(raiting=Avg('reviews__score'))
+    filter_backends = (DjangoFilterBackend,)
+    filters_class = TitleFilter
+    http_method_names = ('get', 'post', 'patch', 'delete')
+
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return TitleReadSerializer
+        return TitleWriteSerializer
+
+
+class GenreViewSet(CDLViewSet):
+    permission_classes = (IsAdminOrReadOnly,)
+    lookup_field = 'slug'
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('=name',)
 
 
 @api_view(['POST'])
