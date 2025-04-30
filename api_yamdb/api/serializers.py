@@ -54,6 +54,14 @@ class CategorySerializer(serializers.ModelSerializer):
         exclude = ('id',)
         model = Category
 
+    def validate_slug(self, value):
+        if not re.match(r'^[-a-zA-Z0-9_]+$', value):
+            raise serializers.ValidationError(
+                'Slug может содержать только латинские буквы,'
+                ' цифры, дефисы и подчеркивания.'
+            )
+        return value
+
 
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:

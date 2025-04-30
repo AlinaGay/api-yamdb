@@ -12,7 +12,7 @@ from .views import (
 v1_router = DefaultRouter()
 v1_router.register('users', UserViewSet)
 v1_router.register('genres', GenreViewSet, basename='genres')
-v1_router.register('category', CategoryViewSet, basename='categories')
+v1_router.register('categories', CategoryViewSet, basename='categories')
 v1_router.register('titles', TitleViewSet, basename='titles')
 
 

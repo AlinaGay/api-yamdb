@@ -23,7 +23,7 @@ class User(AbstractUser):
 class Category(models.Model):
     name = models.CharField(verbose_name='Наименование', max_length=256)
     slug = models.CharField(verbose_name='URL slug',
-                            unique=True, max_length=256)
+                            unique=True, max_length=50)
 
     class Meta:
         verbose_name = 'Категория'

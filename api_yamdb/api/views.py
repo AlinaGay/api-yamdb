@@ -37,7 +37,7 @@ class CategoryViewSet(CDLViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     filter_backends = (filters.SearchFilter,)
-    search_field = ('=name',)
+    search_fields = ('=name',)
 
 
 class TitleViewSet(ModelViewSet):
