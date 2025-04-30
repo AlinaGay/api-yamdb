@@ -1,3 +1,4 @@
+import re
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
@@ -58,6 +59,13 @@ class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         exclude = ('id',)
         model = Genre
+
+    def validate_slug(self, value):
+        if not re.match(r'^[-a-zA-Z0-9_]+$', value):
+            raise serializers.ValidationError(
+                'Slug может содержать только латинские'
+                ' буквы, цифры, дефисы и подчеркивания.')
+        return value
 
 
 class TitleReadSerializer(serializers.ModelSerializer):

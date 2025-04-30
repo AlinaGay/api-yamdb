@@ -42,7 +42,8 @@ class CategoryViewSet(CDLViewSet):
 
 class TitleViewSet(ModelViewSet):
     permission_classes = (IsAdminOrReadOnly,)
-    queryset = Title.objects.all().annotate(raiting=Avg('reviews__score'))
+    # add .annotate(rating=Avg('reviews__score'))
+    queryset = Title.objects.all()
     filter_backends = (DjangoFilterBackend,)
     filters_class = TitleFilter
     http_method_names = ('get', 'post', 'patch', 'delete')
