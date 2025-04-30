@@ -8,20 +8,23 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, status
 from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.exceptions import NotAuthenticated, ValidationError
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
 
-from reviews.models import Category, Genre, Title
+from reviews.models import Category, Genre, Review, Title
 from .filters import TitleFilter
 from .permissions import (IsAdmin, IsAdminOrReadOnly,
                           IsAuthorAdminModeratorOrReadOnly)
-from .serializers import (ConfirmationCodeSerializer, UserCreationSerializer,
-                          UserSerializer, ConfirmationCodeSerializer,
-                          MeSerializer, CategorySerializer, GenreSerializer,
-                          TitleReadSerializer, TitleWriteSerializer)
+from .serializers import (CategorySerializer, ConfirmationCodeSerializer,
+                          GenreSerializer, MeSerializer,
+                          ReviewSerializer, TitleReadSerializer,
+                          TitleWriteSerializer, UserCreationSerializer,
+                          UserSerializer)
 
 User = get_user_model()
 
@@ -42,8 +45,7 @@ class CategoryViewSet(CDLViewSet):
 
 class TitleViewSet(ModelViewSet):
     permission_classes = (IsAdminOrReadOnly,)
-    # add .annotate(rating=Avg('reviews__score'))
-    queryset = Title.objects.all()
+    queryset = Title.objects.all().annotate(rating=Avg('reviews__score'))
     filter_backends = (DjangoFilterBackend,)
     filters_class = TitleFilter
     http_method_names = ('get', 'post', 'patch', 'delete')
@@ -61,6 +63,32 @@ class GenreViewSet(CDLViewSet):
     serializer_class = GenreSerializer
     filter_backends = (filters.SearchFilter,)
     search_fields = ('=name',)
+
+
+class ReviewViewSet(ModelViewSet):
+    permission_classes = (IsAuthorAdminModeratorOrReadOnly,)
+    serializer_class = ReviewSerializer
+    pagination_class = LimitOffsetPagination
+    filter_backends = (filters.OrderingFilter,)
+    ordering_fields = ('-pub_date')
+    http_method_names = ('get', 'post', 'patch', 'delete')
+
+    def get_title(self):
+        title_id = self.kwargs.get('title_id')
+        return get_object_or_404(Title, id=title_id)
+
+    def get_queryset(self):
+        title = self.get_title()
+        return title.reviews.all()
+
+    def perform_create(self, serializer):
+        if not self.request.user.is_authenticated:
+            raise NotAuthenticated('Пользователь не авторизован')
+        title = self.get_title()
+        try:
+            serializer.save(title=title, author=self.request.user)
+        except IntegrityError:
+            raise ValidationError('Вы уже оставляли отзыв на это произведение.')
 
 
 @api_view(['POST'])

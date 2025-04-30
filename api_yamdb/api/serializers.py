@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from reviews.models import Category, Genre, Title
+from reviews.models import Category, Genre, Review, Title
 
 User = get_user_model()
 
@@ -95,3 +95,22 @@ class TitleWriteSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Title
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        read_only=True, slug_field='username'
+    )
+
+    class Meta:
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
+        model = Review
+
+    def validate_score(self, value):
+        if not 1 <= value <= 10:
+            raise serializers.ValidationError(
+                'Оценка должна быть целым числом от 1 до 10'
+            )
+        return value
+
+    
