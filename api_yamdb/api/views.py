@@ -47,8 +47,9 @@ class TitleViewSet(ModelViewSet):
     permission_classes = (IsAdminOrReadOnly,)
     queryset = Title.objects.all().annotate(rating=Avg('reviews__score'))
     filter_backends = (DjangoFilterBackend,)
-    filters_class = TitleFilter
+    filterset_class = TitleFilter
     http_method_names = ('get', 'post', 'patch', 'delete')
+    pagination_class = LimitOffsetPagination
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
@@ -88,7 +89,8 @@ class ReviewViewSet(ModelViewSet):
         try:
             serializer.save(title=title, author=self.request.user)
         except IntegrityError:
-            raise ValidationError('Вы уже оставляли отзыв на это произведение.')
+            raise ValidationError('Вы уже оставляли'
+                                  ' отзыв на это произведение.')
 
 
 @api_view(['POST'])
@@ -173,6 +175,7 @@ class UserViewSet(ModelViewSet):
     http_method_names = ('get', 'post', 'patch', 'delete')
     filter_backends = (filters.SearchFilter,)
     search_fields = ('=username',)
+    pagination_class = LimitOffsetPagination
 
     @action(
         detail=False,
