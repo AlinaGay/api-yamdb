@@ -14,20 +14,28 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         data_dir = os.path.join(settings.BASE_DIR, 'static', 'data')
+        self.import_users(data_dir)
+        self.import_categories(data_dir)
+        self.import_genres(data_dir)
+        self.import_titles(data_dir)
+        self.import_genre_titles(data_dir)
+        self.import_reviews(data_dir)
+        self.import_comments(data_dir)
+        self.stdout.write(self.style.SUCCESS('Данные успешно импортированы.'))
 
-        def load_csv(file_name):
-            path = os.path.join(data_dir, file_name)
-            with open(path, newline='', encoding='utf-8') as f:
-                return list(csv.DictReader(f))
+    def load_csv(self, data_dir, file_name):
+        path = os.path.join(data_dir, file_name)
+        with open(path, newline='', encoding='utf-8') as f:
+            return list(csv.DictReader(f))
 
-        def safe_int(value, default=0):
-            try:
-                return int(value)
-            except (ValueError, TypeError):
-                return default
+    def safe_int(self, value, default=0):
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            return default
 
-        # Users
-        for row in load_csv('users.csv'):
+    def import_users(self, data_dir):
+        for row in self.load_csv(data_dir, 'users.csv'):
             try:
                 User.objects.update_or_create(
                     id=int(row['id']),
@@ -43,8 +51,8 @@ class Command(BaseCommand):
             except IntegrityError as e:
                 self.stderr.write(f"[User] Ошибка: {e}")
 
-        # Categories
-        for row in load_csv('category.csv'):
+    def import_categories(self, data_dir):
+        for row in self.load_csv(data_dir, 'category.csv'):
             try:
                 Category.objects.update_or_create(
                     id=int(row['id']),
@@ -56,8 +64,8 @@ class Command(BaseCommand):
             except IntegrityError as e:
                 self.stderr.write(f"[Category] Ошибка: {e}")
 
-        # Genres
-        for row in load_csv('genre.csv'):
+    def import_genres(self, data_dir):
+        for row in self.load_csv(data_dir, 'genre.csv'):
             try:
                 Genre.objects.update_or_create(
                     id=int(row['id']),
@@ -69,25 +77,26 @@ class Command(BaseCommand):
             except IntegrityError as e:
                 self.stderr.write(f"[Genre] Ошибка: {e}")
 
-        # Titles
-        for row in load_csv('titles.csv'):
+    def import_titles(self, data_dir):
+        for row in self.load_csv(data_dir, 'titles.csv'):
             try:
                 category = Category.objects.get(id=int(row['category']))
                 Title.objects.update_or_create(
                     id=int(row['id']),
                     defaults={
                         'name': row['name'],
-                        'year': safe_int(row['year']),
+                        'year': self.safe_int(row['year']),
                         'category': category
                     }
                 )
             except Category.DoesNotExist:
-                self.stderr.write(f"[Title] Категория с id={row['category']} не найдена")
+                self.stderr.write(
+                    f"[Title] Категория с id={row['category']} не найдена")
             except IntegrityError as e:
                 self.stderr.write(f"[Title] Ошибка: {e}")
 
-        # GenreTitle (M2M)
-        for row in load_csv('genre_title.csv'):
+    def import_genre_titles(self, data_dir):
+        for row in self.load_csv(data_dir, 'genre_title.csv'):
             try:
                 title = Title.objects.get(id=int(row['title_id']))
                 genre = Genre.objects.get(id=int(row['genre_id']))
@@ -95,8 +104,8 @@ class Command(BaseCommand):
             except (Title.DoesNotExist, Genre.DoesNotExist) as e:
                 self.stderr.write(f"[GenreTitle] Ошибка: {e}")
 
-        # Reviews
-        for row in load_csv('review.csv'):
+    def import_reviews(self, data_dir):
+        for row in self.load_csv(data_dir, 'review.csv'):
             try:
                 title = Title.objects.get(id=int(row['title_id']))
                 author = User.objects.get(id=int(row['author']))
@@ -106,7 +115,7 @@ class Command(BaseCommand):
                         'title': title,
                         'text': row['text'],
                         'author': author,
-                        'score': safe_int(row['score']),
+                        'score': self.safe_int(row['score']),
                         'pub_date': row['pub_date']
                     }
                 )
@@ -115,8 +124,8 @@ class Command(BaseCommand):
             except IntegrityError as e:
                 self.stderr.write(f"[Review] Ошибка: {e}")
 
-        # Comments
-        for row in load_csv('comments.csv'):
+    def import_comments(self, data_dir):
+        for row in self.load_csv(data_dir, 'comments.csv'):
             try:
                 review = Review.objects.get(id=int(row['review_id']))
                 author = User.objects.get(id=int(row['author']))
@@ -133,5 +142,3 @@ class Command(BaseCommand):
                 self.stderr.write(f"[Comment] Ошибка: {e}")
             except IntegrityError as e:
                 self.stderr.write(f"[Comment] Ошибка: {e}")
-
-        self.stdout.write(self.style.SUCCESS('Данные успешно импортированы.'))
