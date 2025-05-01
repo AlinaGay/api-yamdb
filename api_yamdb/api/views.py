@@ -20,7 +20,8 @@ from reviews.models import Category, Genre, Review, Title
 from .filters import TitleFilter
 from .permissions import (IsAdmin, IsAdminOrReadOnly,
                           IsAuthorAdminModeratorOrReadOnly)
-from .serializers import (CategorySerializer, ConfirmationCodeSerializer,
+from .serializers import (CategorySerializer, CommentSerializer,
+                          ConfirmationCodeSerializer,
                           GenreSerializer, MeSerializer,
                           ReviewSerializer, TitleReadSerializer,
                           TitleWriteSerializer, UserCreationSerializer,
@@ -91,6 +92,48 @@ class ReviewViewSet(ModelViewSet):
         except IntegrityError:
             raise ValidationError('Вы уже оставляли'
                                   ' отзыв на это произведение.')
+
+
+class CommentViewSet(ModelViewSet):
+    permission_classes = (IsAuthorAdminModeratorOrReadOnly,)
+    serializer_class = CommentSerializer
+    pagination_class = LimitOffsetPagination
+    filter_backends = (filters.OrderingFilter,)
+    ordering_fields = ('-pub_date')
+    http_method_names = ('get', 'post', 'patch', 'delete')
+
+    def get_title(self):
+        title_id = self.kwargs.get('title_id')
+        return get_object_or_404(Title, id=title_id)
+
+    def get_review(self):
+        title = self.get_title()
+        review_id = self.kwargs.get('review_id')
+        return get_object_or_404(Review, id=review_id, title=title)
+
+    def get_queryset(self):
+        return self.get_review().comments.all()
+
+    def perform_create(self, serializer):
+        if not self.request.user.is_authenticated:
+            raise NotAuthenticated('Пользователь не авторизован')
+        serializer.save(
+            author=self.request.user,
+            review=self.get_review()
+        )
+
+    def post(self, request, *args, **kwargs):
+        if 'pk' in kwargs:
+            if not request.user.is_authenticated:
+                return Response(
+                    {'detail': 'Учетные данные не были предоставлены.'},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+            return Response(
+                {'detail': 'Метод POST не разрешён на этом endpoint.'},
+                status=status.HTTP_405_METHOD_NOT_ALLOWED
+            )
+        return super().create(request, *args, **kwargs)
 
 
 @api_view(['POST'])

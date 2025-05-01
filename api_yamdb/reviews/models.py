@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils import timezone
 
 from .validators import validate_year
 
@@ -97,3 +98,4 @@ class Comment(models.Model):
     text = models.TextField()
     author = models.ForeignKey(User, on_delete=models.CASCADE,
                                related_name='comments')
+    pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
