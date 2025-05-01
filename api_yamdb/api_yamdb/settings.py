@@ -12,6 +12,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+DOMAIN_NAME = 'myyamdb.ru'
 
 # Application definition
 
@@ -127,3 +128,7 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.mailBackend'
+EMAIL_FILEPATH = os.path.join(BASE_DIR, 'send_emails')
+DEFAULT_FROM_EMAIL = f'admin@{DOMAIN_NAME}'
