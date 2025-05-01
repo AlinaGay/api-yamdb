@@ -132,3 +132,5 @@ SIMPLE_JWT = {
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.mailBackend'
 EMAIL_FILEPATH = os.path.join(BASE_DIR, 'send_emails')
 DEFAULT_FROM_EMAIL = f'admin@{DOMAIN_NAME}'
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
