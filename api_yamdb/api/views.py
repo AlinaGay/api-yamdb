@@ -10,7 +10,8 @@ from rest_framework import filters, mixins, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.exceptions import NotAuthenticated, ValidationError
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import (AllowAny, IsAuthenticated)
+from rest_framework.permissions import (
+    AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
@@ -67,11 +68,12 @@ class GenreViewSet(CDLViewSet):
 
 
 class ReviewViewSet(ModelViewSet):
-    permission_classes = (IsAuthorAdminModeratorOrReadOnly,)
+    permission_classes = [
+        IsAuthenticatedOrReadOnly, IsAuthorAdminModeratorOrReadOnly]
     serializer_class = ReviewSerializer
     pagination_class = LimitOffsetPagination
     filter_backends = (filters.OrderingFilter,)
-    ordering_fields = ('-pub_date')
+    ordering_fields = ('-pub_date',)
     http_method_names = ('get', 'post', 'patch', 'delete')
 
     def get_title(self):
@@ -83,18 +85,13 @@ class ReviewViewSet(ModelViewSet):
         return title.reviews.all()
 
     def perform_create(self, serializer):
-        if not self.request.user.is_authenticated:
-            raise NotAuthenticated('Пользователь не авторизован')
         title = self.get_title()
-        try:
-            serializer.save(title=title, author=self.request.user)
-        except IntegrityError:
-            raise ValidationError('Вы уже оставляли'
-                                  ' отзыв на это произведение.')
+        serializer.save(title=title, author=self.request.user)
 
 
 class CommentViewSet(ModelViewSet):
-    permission_classes = (IsAuthorAdminModeratorOrReadOnly,)
+    permission_classes = [
+        IsAuthenticatedOrReadOnly, IsAuthorAdminModeratorOrReadOnly]
     serializer_class = CommentSerializer
     pagination_class = LimitOffsetPagination
     filter_backends = (filters.OrderingFilter,)
@@ -114,8 +111,6 @@ class CommentViewSet(ModelViewSet):
         return self.get_review().comments.all()
 
     def perform_create(self, serializer):
-        if not self.request.user.is_authenticated:
-            raise NotAuthenticated('Пользователь не авторизован')
         serializer.save(
             author=self.request.user,
             review=self.get_review()
