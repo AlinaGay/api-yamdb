@@ -116,19 +116,6 @@ class CommentViewSet(ModelViewSet):
             review=self.get_review()
         )
 
-    def post(self, request, *args, **kwargs):
-        if 'pk' in kwargs:
-            if not request.user.is_authenticated:
-                return Response(
-                    {'detail': 'Учетные данные не были предоставлены.'},
-                    status=status.HTTP_401_UNAUTHORIZED
-                )
-            return Response(
-                {'detail': 'Метод POST не разрешён на этом endpoint.'},
-                status=status.HTTP_405_METHOD_NOT_ALLOWED
-            )
-        return super().create(request, *args, **kwargs)
-
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
