@@ -39,7 +39,8 @@ class User(AbstractUser):
 
 
 class NamedSlugModel(models.Model):
-    name = models.CharField(verbose_name='Наименование', max_length=MAX_LENGTH_256)
+    name = models.CharField(verbose_name='Наименование',
+                            max_length=MAX_LENGTH_256)
     slug = models.CharField(verbose_name='URL slug',
                             unique=True, max_length=MAX_LENGTH_50)
 
@@ -64,7 +65,8 @@ class Genre(NamedSlugModel):
 
 
 class Title(models.Model):
-    name = models.CharField(verbose_name='Наименование', max_length=MAX_LENGTH_256)
+    name = models.CharField(verbose_name='Наименование',
+                            max_length=MAX_LENGTH_256)
     year = models.SmallIntegerField(verbose_name='Год',
                                     validators=[validate_year],
                                     db_index=True)
