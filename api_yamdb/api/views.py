@@ -45,7 +45,8 @@ class CategoryViewSet(CDLViewSet):
 
 class TitleViewSet(ModelViewSet):
     permission_classes = (IsAdminOrReadOnly,)
-    queryset = Title.objects.all().annotate(rating=Avg('reviews__score'))
+    queryset = Title.objects.annotate(
+        rating=Avg('reviews__score')).order_by('-rating')
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
     http_method_names = ('get', 'post', 'patch', 'delete')
@@ -97,14 +98,9 @@ class CommentViewSet(ModelViewSet):
     ordering_fields = ('-pub_date')
     http_method_names = ('get', 'post', 'patch', 'delete')
 
-    def get_title(self):
-        title_id = self.kwargs.get('title_id')
-        return get_object_or_404(Title, id=title_id)
-
     def get_review(self):
-        title = self.get_title()
         review_id = self.kwargs.get('review_id')
-        return get_object_or_404(Review, id=review_id, title=title)
+        return get_object_or_404(Review, id=review_id)
 
     def get_queryset(self):
         return self.get_review().comments.all()

@@ -74,7 +74,6 @@ class Title(models.Model):
     class Meta:
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
-        ordering = ('-id',)
 
 
 class GenreTitle(models.Model):
@@ -98,7 +97,7 @@ class Review(models.Model):
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         default_related_name = 'reviews'
-        ordering = ('-pub_date',)
+        ordering = ('-pub_date', '-score')
         constraints = [
             models.UniqueConstraint(
                 fields=['title', 'author'],
