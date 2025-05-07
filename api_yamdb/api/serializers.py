@@ -108,8 +108,6 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         request = self.context.get('request')
-        if not request or not request.user.is_authenticated:
-            raise serializers.ValidationError('Пользователь не авторизован')
 
         if request.method == 'POST':
             title_id = self.context.get('view').kwargs.get('title_id')

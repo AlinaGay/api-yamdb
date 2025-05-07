@@ -15,7 +15,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
 
-from reviews.models import Category, Genre, Review, Title
+from reviews.models import Category, Genre, NamedSlugModel, Review, Title
 from .filters import TitleFilter
 from .permissions import (IsAdmin, IsAdminOrReadOnly,
                           IsAuthorAdminModeratorOrReadOnly)
@@ -37,7 +37,7 @@ class CDLViewSet(mixins.CreateModelMixin, mixins.DestroyModelMixin,
 class CategoryViewSet(CDLViewSet):
     permission_classes = (IsAdminOrReadOnly,)
     lookup_field = 'slug'
-    queryset = Category.objects.all()
+    queryset = Category.objects.all().order_by(*NamedSlugModel._meta.ordering)
     serializer_class = CategorySerializer
     filter_backends = (filters.SearchFilter,)
     search_fields = ('=name',)
@@ -61,7 +61,7 @@ class TitleViewSet(ModelViewSet):
 class GenreViewSet(CDLViewSet):
     permission_classes = (IsAdminOrReadOnly,)
     lookup_field = 'slug'
-    queryset = Genre.objects.all()
+    queryset = Genre.objects.all().order_by(*NamedSlugModel._meta.ordering)
     serializer_class = GenreSerializer
     filter_backends = (filters.SearchFilter,)
     search_fields = ('=name',)

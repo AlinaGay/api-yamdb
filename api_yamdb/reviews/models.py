@@ -4,6 +4,11 @@ from django.db import models
 
 from .validators import validate_year
 
+MAX_LENGTH_50 = 50
+MAX_LENGTH_256 = 256
+MIN_VALUE_1 = 1
+MAX_VALUE_10 = 10
+
 
 class User(AbstractUser):
     USER = 'user'
@@ -34,12 +39,13 @@ class User(AbstractUser):
 
 
 class NamedSlugModel(models.Model):
-    name = models.CharField(verbose_name='Наименование', max_length=256)
+    name = models.CharField(verbose_name='Наименование', max_length=MAX_LENGTH_256)
     slug = models.CharField(verbose_name='URL slug',
-                            unique=True, max_length=50)
+                            unique=True, max_length=MAX_LENGTH_50)
 
     class Meta:
         abstract = True
+        ordering = ['name', 'slug']
 
     def __str__(self):
         return self.name
@@ -49,18 +55,16 @@ class Category(NamedSlugModel):
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
-        ordering = ('name', 'slug')
 
 
 class Genre(NamedSlugModel):
     class Meta:
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
-        ordering = ('name', 'slug')
 
 
 class Title(models.Model):
-    name = models.CharField(verbose_name='Наименование', max_length=256)
+    name = models.CharField(verbose_name='Наименование', max_length=MAX_LENGTH_256)
     year = models.SmallIntegerField(verbose_name='Год',
                                     validators=[validate_year],
                                     db_index=True)
@@ -74,6 +78,7 @@ class Title(models.Model):
     class Meta:
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
+        ordering = ['-year']
 
 
 class GenreTitle(models.Model):
@@ -88,8 +93,8 @@ class Review(models.Model):
     text = models.TextField()
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     score = models.PositiveSmallIntegerField(validators=[
-        MinValueValidator(1),
-        MaxValueValidator(10)
+        MinValueValidator(MIN_VALUE_1),
+        MaxValueValidator(MAX_VALUE_10)
     ])
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
 
