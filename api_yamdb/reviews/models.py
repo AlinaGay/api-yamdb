@@ -4,10 +4,10 @@ from django.db import models
 
 from .validators import validate_year
 
-MAX_LENGTH_50 = 50
-MAX_LENGTH_256 = 256
-MIN_VALUE_1 = 1
-MAX_VALUE_10 = 10
+SLUG_MAX_LENGTH = 50
+NAME_MAX_LENGTH = 256
+SCORE_MIN_VALUE = 1
+SCORE_MAX_VALUE = 10
 
 
 class User(AbstractUser):
@@ -40,9 +40,9 @@ class User(AbstractUser):
 
 class NamedSlugModel(models.Model):
     name = models.CharField(verbose_name='Наименование',
-                            max_length=MAX_LENGTH_256)
+                            max_length=NAME_MAX_LENGTH)
     slug = models.CharField(verbose_name='URL slug',
-                            unique=True, max_length=MAX_LENGTH_50)
+                            unique=True, max_length=SLUG_MAX_LENGTH)
 
     class Meta:
         abstract = True
@@ -53,20 +53,20 @@ class NamedSlugModel(models.Model):
 
 
 class Category(NamedSlugModel):
-    class Meta:
+    class Meta(NamedSlugModel.Meta):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
 
 class Genre(NamedSlugModel):
-    class Meta:
+    class Meta(NamedSlugModel.Meta):
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
 
 class Title(models.Model):
     name = models.CharField(verbose_name='Наименование',
-                            max_length=MAX_LENGTH_256)
+                            max_length=NAME_MAX_LENGTH)
     year = models.SmallIntegerField(verbose_name='Год',
                                     validators=[validate_year],
                                     db_index=True)
@@ -95,8 +95,8 @@ class Review(models.Model):
     text = models.TextField()
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     score = models.PositiveSmallIntegerField(validators=[
-        MinValueValidator(MIN_VALUE_1),
-        MaxValueValidator(MAX_VALUE_10)
+        MinValueValidator(SCORE_MIN_VALUE),
+        MaxValueValidator(SCORE_MAX_VALUE)
     ])
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
 

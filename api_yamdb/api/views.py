@@ -37,7 +37,7 @@ class CDLViewSet(mixins.CreateModelMixin, mixins.DestroyModelMixin,
 class CategoryViewSet(CDLViewSet):
     permission_classes = (IsAdminOrReadOnly,)
     lookup_field = 'slug'
-    queryset = Category.objects.all().order_by(*NamedSlugModel._meta.ordering)
+    queryset = Category.objects.all()
     serializer_class = CategorySerializer
     filter_backends = (filters.SearchFilter,)
     search_fields = ('=name',)
@@ -61,7 +61,7 @@ class TitleViewSet(ModelViewSet):
 class GenreViewSet(CDLViewSet):
     permission_classes = (IsAdminOrReadOnly,)
     lookup_field = 'slug'
-    queryset = Genre.objects.all().order_by(*NamedSlugModel._meta.ordering)
+    queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     filter_backends = (filters.SearchFilter,)
     search_fields = ('=name',)
