@@ -1,66 +1,61 @@
 # api_yamdb
 api_yamdb
 
-Проект YaMDb собирает отзывы пользователей на произведения искусства: книги, фильмы и музыку.
+The **YaMDb** project collects user reviews on works of art: books, movies, and music.
 
-## Описание
+## Description
 
-API YaMDb позволяет:
+The **YaMDb API** allows you to:
 
-- Получать список произведений, жанров и категорий
-- Смотреть рейтинги и отзывы других пользователей
-- Писать отзывы и ставить оценки
-- Комментировать отзывы
-- Ограничивать права пользователей по ролям: пользователь, модератор, администратор
+- Retrieve lists of works, genres, and categories
+- View ratings and reviews from other users
+- Write reviews and give ratings
+- Comment on reviews
+- Restrict user permissions by roles: user, moderator, administrator
 
-## Технологии
+## Technologies
 
 - Python 3.12
 - Django 3.2+
 - Django REST Framework
-- SQLite (по умолчанию)
-- JWT аутентификация
+- SQLite (default)
+- JWT authentication
 
-## Запуск проекта
+## Project Launch
 
-1. Клонировать репозиторий и перейти в него в командной строке:
+1. Clone the repository and navigate to it in the command line:
 ```bash
 git clone https://github.com/AlinaGay/api-final-yatube.git
-```
-```bash
 cd yatube_api
 ```
-
-2. Cоздать и активировать виртуальное окружение:
-```bash
+2. Create and activate a virtual environment:
+```
 python3 -m venv env
 source env/bin/activate
 ```
-3. Установите зависимости:
-
-```bash
+3. Install dependencies:
+```
 python3 -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
-
-4. Выполните миграции и запустите сервер:
-```bash
+4. Apply migrations and start the server:
+```
 python manage.py migrate
 python manage.py runserver
 ```
-
-5. (Опционально) Импортируйте тестовые данные:
-```bash
-python manage.py import_csv
+5. (Optional) Import test data:
 ```
+python manage.py import_csv
 
-6. Структура проекта
-/api_yamdb/ — конфигурация Django
-/api/ - роутеры, вью, сериалайзеры
-/reviews/ — основное приложение с моделями и API
-/static/data/ — CSV-файлы для загрузки в базу
+```
+6. Project Structure:
 
-7. Автор
+- /api_yamdb/ — Django configuration
+- /api/ — routers, views, serializers
+- /reviews/ — main application with models and API
+- /static/data/ — CSV files for database import
 
-| [Alina Opolskaia](https://github.com/AlinaGay/) |
-| Backend Developer • Python Engineer 
+Author
+
+[AlinaGay](https://github.com/AlinaGay)
+| Backend Developer • Python Engineer |
